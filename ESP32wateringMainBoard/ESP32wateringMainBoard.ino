@@ -4,9 +4,13 @@
 #include <iostream>
 #include <string>
 
-#define TIME_TO_WATER 300000
 #define DELAY 60000
 #define COUNT 10
+#define LIMIT 65
+#define ANCSA 90000
+#define MIDDLE 180000
+#define OCSI 90000
+#define OUTSIDE 300000 
 
 WiFiClientSecure client;
 
@@ -65,13 +69,14 @@ typedef struct circle_data {
     uint relayMinutes;   
     int sensorValue;
     unsigned long timeStarted;
+    int water;
 } circle_data;
 
 circle_data circles[] = {
-    { .number = 1, .relayMode = false, .relayMinutes = 0, .sensorValue = 100, .timeStarted = 0 },
-    { .number = 2, .relayMode = false, .relayMinutes = 0, .sensorValue = 100, .timeStarted = 0 },
-    { .number = 3, .relayMode = false, .relayMinutes = 0, .sensorValue = 100, .timeStarted = 0 },
-    { .number = 4, .relayMode = false, .relayMinutes = 0, .sensorValue = 100, .timeStarted = 0 }
+    { .number = 1, .relayMode = false, .relayMinutes = 0, .sensorValue = 999, .timeStarted = 0, .water = OCSI },
+    { .number = 2, .relayMode = false, .relayMinutes = 0, .sensorValue = 999, .timeStarted = 0, .water = MIDDLE },
+    { .number = 3, .relayMode = false, .relayMinutes = 0, .sensorValue = 999, .timeStarted = 0, .water = ANCSA },
+    { .number = 4, .relayMode = false, .relayMinutes = 0, .sensorValue = 999, .timeStarted = 0, .water = OUTSIDE }
 };
 
 void checkRelays() {
@@ -85,7 +90,7 @@ void checkRelays() {
 
     if (circles[i].relayMode == true) {
       circles[i].relayMinutes += 1;
-      if (circles[i].timeStarted + (TIME_TO_WATER) < millis()) {
+      if (circles[i].timeStarted + circles[i].water < millis()) {
         digitalWrite(relayPins[i], LOW);
         circles[i].relayMode = false;
 
@@ -99,11 +104,12 @@ void checkRelays() {
   }
 }
 
-void resetRelayMinutes() {
+void resetCircleData() {
   unsigned int i = 0;
 
   for (i = 0; i<4; i++) {
     circles[i].relayMinutes = 0;
+    circles[i].sensorValue = 999;
   }
 }
 
@@ -118,7 +124,7 @@ void onDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   unsigned int index = sensorData.sensorNumber - 1;
   circles[index].sensorValue = sensorData.mappedValue;
 
-  if (sensorData.mappedValue < 20) {  
+  if (sensorData.mappedValue < LIMIT) {  
     if (circles[index].relayMode == false) {
       circles[index].relayMode = true;
       digitalWrite(relayPins[index], HIGH);
@@ -198,7 +204,7 @@ void loop() {
   Serial.println(counter);
   if (counter == COUNT - 1) {
     sendDataToServer();
-    resetRelayMinutes();
+    resetCircleData();
   }
   counter += 1;
   if (counter == COUNT) {

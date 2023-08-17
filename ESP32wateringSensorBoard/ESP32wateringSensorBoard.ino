@@ -6,14 +6,15 @@
 #define TIME_TO_SLEEP  600
 
 const int SensorNumber = 4;
-const int minValue = 878;
-const int maxValue = 2290;
+const int minValue = 873;
+const int maxValue = 2559;
 const char* ssid = "DIGI_0b2d70";
 
 const int SensorPin = 32;
 int readValue;
 int mappedValue;
 
+//uint8_t responderAddress[] = {0x00, 0xBB, 0x11, 0x77, 0x00, 0xDD};
 uint8_t responderAddress[] = {0x0C, 0xB8, 0x15, 0x77, 0x0E, 0xD4};
 
 typedef struct struct_message {
@@ -91,8 +92,7 @@ void setup() {
     
     return ;
   } else {
-    Serial.println("ESP add peer succeed!");    
-    
+    Serial.println("ESP add peer succeed!");     
   }
 
   esp_err_t result = esp_now_send(responderAddress, (uint8_t *) &data, sizeof(data));
