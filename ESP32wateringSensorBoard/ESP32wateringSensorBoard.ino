@@ -3,11 +3,11 @@
 #include <esp_wifi.h>
 
 #define SECONDFACTOR 1000000  
-#define TIME_TO_SLEEP  600
+#define TIME_TO_SLEEP  1800
 
-const int SensorNumber = 4;
-const int minValue = 873;
-const int maxValue = 2559;
+const int SensorNumber = 1;
+const int minValue = 951;
+const int maxValue = 2667;
 const char* ssid = "DIGI_0b2d70";
 
 const int SensorPin = 32;
