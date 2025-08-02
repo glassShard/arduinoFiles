@@ -30,7 +30,7 @@
 #include <WiFiClientSecure.h>
 
 const char* ssid     = "DIGI_0b2d70";     // change this for your own network
-const char* password = "aa21f4d2";  // change this for your own network
+const char* password = "XXXXXXXX";  // change this for your own network
 
 const char*  server = "turazzunk.hu";  // Change this for your own server
 String url = "/esp32/message.txt";                     // Change this for your own file

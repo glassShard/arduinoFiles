@@ -94,3 +94,10 @@ void loop() {
   checkRelays();
   delay(DELAY);
 }
+
+41	7	4	MRDG - DB3 - TEST	2024-02-06 17:19:21	2024-02-06 17:19:21	idg-test
+42	24	4	MRDG - DB3 - TEST	2024-02-06 17:19:21	2024-02-06 17:19:21	isg-test-rack
+43	25	4	MRDG - DB3 - TEST	2024-02-06 17:19:21	2024-02-06 17:19:21	isg-test-gp
+44	26	4	MRDG - DB3 - TEST	2024-02-06 17:19:21	2024-02-06 17:19:21	isg-test-msft
+85	30	4	MRDG - DB3 - TEST	2024-02-19 13:07:36	2024-02-19 13:07:36	isg-test-dwc
+

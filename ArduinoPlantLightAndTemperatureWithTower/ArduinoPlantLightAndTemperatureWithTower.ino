@@ -9,8 +9,16 @@ uint8_t LIGHTPIN = A0;
 uint8_t DHTPIN = 2;
 uint8_t RELAYLIGHTPIN = 7;
 uint8_t RELAYHEATPIN = 6;
+uint8_t RELAYPUMPPIN = 8;
+uint8_t RELAYTOWERLIGHTPIN = 9;
 uint8_t relayLightState = LOW;
 uint8_t relayHeatState = LOW;
+uint8_t relayTowerLightState = LOW;
+uint8_t relayPumpState = LOW;
+unsigned long switchedOn = 1200000;
+unsigned long switchedOff = 2400000;
+
+unsigned long previousPumpSwitch = 0;
 
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
@@ -25,8 +33,6 @@ String setLeadingZero(int value) {
 }
 
 void setRelay(uint8_t relayPin, uint8_t value) {
-  // a heat relé fordítva működik, ezért heat esetben meg kell fordítani a relére kimenő jelet
-  int valueToSet = value;
   Serial.println("SetRelay called");
   Serial.println(relayPin);
   
@@ -35,21 +41,22 @@ void setRelay(uint8_t relayPin, uint8_t value) {
   }
 
   if (relayPin == RELAYHEATPIN) {
-    if (value == HIGH) {
-      valueToSet = LOW;
-    } else {
-      valueToSet = HIGH;
-    }
     relayHeatState = value;
-    Serial.print("RELAYHEATPIN: ");
-    Serial.println(value);
   }
 
-  digitalWrite(relayPin, valueToSet);
+  if (relayPin == RELAYTOWERLIGHTPIN) {
+    relayTowerLightState = value;
+  }
+
+  if (relayPin == RELAYPUMPPIN) {
+    relayPumpState = value;
+  }
+
+  digitalWrite(relayPin, value);
 }
 
 void printOnLcd(float t, float h) {
-    lcd.clear();
+    //lcd.clear();
     lcd.setCursor(0,0);
     lcd.print(t);
     lcd.print("C ");
@@ -76,6 +83,8 @@ void setup() {
 
   pinMode(RELAYLIGHTPIN, OUTPUT);
   pinMode(RELAYHEATPIN, OUTPUT);
+  pinMode(RELAYTOWERLIGHTPIN, OUTPUT);
+  pinMode(RELAYPUMPPIN, OUTPUT);
   pinMode(LIGHTPIN, INPUT);
   pinMode(DHTPIN, INPUT);
 
@@ -84,7 +93,10 @@ void setup() {
   lcd.init();
   lcd.backlight();
 
-  digitalWrite(RELAYHEATPIN, HIGH);
+  digitalWrite(RELAYHEATPIN, LOW);
+  digitalWrite(RELAYLIGHTPIN, LOW);
+  digitalWrite(RELAYTOWERLIGHTPIN, LOW);
+  digitalWrite(RELAYPUMPPIN, LOW);
 
   const DateTime dnow = RTClib::now();
   Serial.print(dnow.year());
@@ -101,28 +113,33 @@ void setup() {
 }
 
 void loop() {
+  
   const int light = analogRead(LIGHTPIN);
   Serial.println(light);
   const DateTime d = RTClib::now();
   
   if (relayLightState == HIGH) {
-    if (d.hour() < 6 || d.hour() > 20 || light > 810) {
+    if (d.hour() <= 4 || d.hour() >= 21 || light > 810) {
       setRelay(RELAYLIGHTPIN, LOW);
+      setRelay(RELAYTOWERLIGHTPIN, LOW);
     } 
   }
 
   if (relayLightState == LOW) {
-    if (d.hour() > 6 && d.hour() < 20 && light < 750) {
+    if (d.hour() > 4 && d.hour() < 20 && light < 750) {
       setRelay(RELAYLIGHTPIN, HIGH);
+      setRelay(RELAYTOWERLIGHTPIN, HIGH);
     } 
   }
 
   float t = dht.readTemperature();
   float h = dht.readHumidity();
+  Serial.println(t);
+  Serial.println(h);
 
   if (isnan(t) || isnan(h)) {
     Serial.println("Failed to read from DHT sensor!");
-    lcd.clear();
+    //lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Failed to read");
     lcd.setCursor(0,1);
@@ -139,6 +156,15 @@ void loop() {
       Serial.println("set relay to low");
       setRelay(RELAYHEATPIN, LOW);
     }
+  }
+
+  if (relayPumpState == HIGH && millis() - previousPumpSwitch > switchedOn) {
+    setRelay(RELAYPUMPPIN, LOW);
+    previousPumpSwitch = millis(); 
+  }
+  if (relayPumpState == LOW && millis() - previousPumpSwitch > switchedOff) {
+    setRelay(RELAYPUMPPIN, HIGH);
+    previousPumpSwitch = millis(); 
   }
 
   delay(10000);

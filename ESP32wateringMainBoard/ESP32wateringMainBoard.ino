@@ -15,7 +15,7 @@
 WiFiClientSecure client;
 
 const char* ssid = "DIGI_0b2d70";
-const char* password = "aa21f4d2";
+const char* password = "XXXXXXXX";
 const char* server = "turazzunk.hu";
 const char* url = "/watering/uploadSensorData.php";
 const char* test_root_ca= \
